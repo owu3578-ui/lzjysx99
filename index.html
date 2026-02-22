@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>我们的365天</title>
+
+  <style>
+    :root{
+      --bg:#070A10;
+      --card: rgba(255,255,255,.06);
+      --border: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background: radial-gradient(900px 500px at 50% -10%, rgba(255,255,255,.10), transparent 60%),
+                  radial-gradient(700px 400px at 20% 10%, rgba(120,160,255,.10), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    }
+
+    header{
+      max-width: 980px;
+      margin: 46px auto 18px;
+      padding: 0 18px;
+      text-align:center;
+      animation: fadeDown .9s ease both;
+    }
+    h1{
+      margin:0;
+      font-size: clamp(40px, 6vw, 68px);
+      letter-spacing: 2px;
+      font-weight: 800;
+    }
+    .sub{
+      margin: 10px auto 0;
+      max-width: 740px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto 70px;
+      padding: 0 18px;
+    }
+
+    .shot{
+      margin: 18px auto;
+      padding: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      transform: translateY(14px);
+      opacity: 0;
+      transition: transform .6s ease, opacity .6s ease;
+      overflow:hidden;
+    }
+    .shot.is-visible{
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .shot img{
+      width:100%;
+      display:block;
+      border-radius: 14px;
+      cursor: zoom-in;
+      user-select:none;
+      -webkit-user-drag:none;
+      transition: transform .25s ease, filter .25s ease;
+    }
+    .shot img:hover{
+      transform: scale(1.01);
+      filter: brightness(1.02);
+    }
+
+    .tag{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin: 10px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .lightbox{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 999;
+      backdrop-filter: blur(6px);
+    }
+    .lightbox.show{ display:flex; }
+    .lightbox img{
+      max-width: min(980px, 96vw);
+      max-height: 86vh;
+      border-radius: 16px;
+      box-shadow: 0 30px 90px rgba(0,0,0,.55);
+      cursor: zoom-out;
+    }
+    .hint{
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,.7);
+      font-size: 12px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      display:none;
+      z-index: 1000;
+    }
+    .lightbox.show ~ .hint{ display:block; }
+
+    @keyframes fadeDown{
+      from{ opacity:0; transform: translateY(-10px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>我们的365天</h1>
+    <div class="sub">向下滑动浏览。点击图片可放大预览。</div>
+  </header>
+
+  <main class="wrap" id="gallery">
+    
+    <section class="shot"><img src="1.jpg" alt="photo 1"><div class="tag"><span>#01</span><span> </span></div></section>
+    <section class="shot"><img src="2.jpg" alt="photo 2"><div class="tag"><span>#02</span><span> </span></div></section>
+    <section class="shot"><img src="3.jpg" alt="photo 3"><div class="tag"><span>#03</span><span> </span></div></section>
+    <section class="shot"><img src="4.jpg" alt="photo 4"><div class="tag"><span>#04</span><span> </span></div></section>
+    <section class="shot"><img src="5.jpg" alt="photo 5"><div class="tag"><span>#05</span><span> </span></div></section>
+    <section class="shot"><img src="6.jpg" alt="photo 6"><div class="tag"><span>#06</span><span> </span></div></section>
+    <section class="shot"><img src="7.jpg" alt="photo 7"><div class="tag"><span>#07</span><span> </span></div></section>
+    <section class="shot"><img src="8.jpg" alt="photo 8"><div class="tag"><span>#08</span><span> </span></div></section>
+    <section class="shot"><img src="9.jpg" alt="photo 9"><div class="tag"><span>#09</span><span> </span></div></section>
+    <section class="shot"><img src="10.jpg" alt="photo 10"><div class="tag"><span>#10</span><span> </span></div></section>
+  </main>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <img id="lightboxImg" alt="preview" />
+  </div>
+  <div class="hint">点击空白处或图片即可关闭（Esc 也可以）</div>
+
+  <script>
+    
+    const cards = document.querySelectorAll('.shot');
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    cards.forEach(c=>io.observe(c));
+
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+
+    document.getElementById('gallery').addEventListener('click', (e)=>{
+      const img = e.target.closest('img');
+      if(!img) return;
+      lightboxImg.src = img.getAttribute('src');
+      lightbox.classList.add('show');
+      lightbox.setAttribute('aria-hidden','false');
+    });
+
+    const closeBox = ()=>{
+      lightbox.classList.remove('show');
+      lightbox.setAttribute('aria-hidden','true');
+      lightboxImg.src = "";
+    };
+
+    lightbox.addEventListener('click', closeBox);
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape') closeBox();
+    });
+  </script>
+</body>
+</html>
